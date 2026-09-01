@@ -1,0 +1,39 @@
+# Environment variables & secrets (CRITICAL: Do not commit secrets to Git)
+.env
+*.env
+.env.*
+!.env.example
+
+# Virtual Environments
+venv/
+env/
+ENV/
+.venv/
+
+# Python cache & compiled bytecode
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg
+*.egg-info/
+.eggs/
+
+# PyInstaller & Build artifacts
+build/
+dist/
+*.manifest
+
+# Runtime generated data & printed patient slips
+printed_slips/
+*.pdf
+
+# IDE, Editor & Workspace files
+.vscode/
+.idea/
+*.code-workspace
+
+# Operating System files
+Thumbs.db
+Desktop.ini
+.DS_Store
