@@ -239,13 +239,73 @@ class SlipSettingsDialog(QDialog):
         return tab
 
     def _create_patient_tab(self) -> QWidget:
+        scroll = QScrollArea()
+        scroll.setWidgetResizable(True)
+        scroll.setStyleSheet("QScrollArea { border: none; background: transparent; }")
+
         tab = QWidget()
         layout = QVBoxLayout(tab)
         layout.setContentsMargins(14, 14, 14, 14)
         layout.setSpacing(8)
 
-        # General Font & Styles
-        sec1_lbl = QLabel("<b>Patient Row Typography & Styles:</b>")
+        # ── 1. Patient Row Divider Lines ──────────────────────────────────
+        sec_lines = QLabel("<b>📏 Patient Row Divider Lines:</b>")
+        sec_lines.setStyleSheet("color: #1A5276; font-size: 12px;")
+        layout.addWidget(sec_lines)
+
+        grid_lines = QGridLayout()
+        grid_lines.setVerticalSpacing(6)
+        grid_lines.setHorizontalSpacing(12)
+
+        self.chk_show_patient_lines = QCheckBox("Show Lines at Top & Bottom of Patient Details")
+        self.chk_show_patient_lines.setStyleSheet("font-weight: 600; color: #0F172A;")
+        self.chk_show_patient_lines.stateChanged.connect(self._on_control_changed)
+        grid_lines.addWidget(self.chk_show_patient_lines, 0, 0, 1, 2)
+
+        grid_lines.addWidget(QLabel("Lines Style:"), 1, 0)
+        self.combo_lines_style = QComboBox()
+        self.combo_lines_style.addItems(["Single", "Double"])
+        self.combo_lines_style.currentTextChanged.connect(self._on_control_changed)
+        grid_lines.addWidget(self.combo_lines_style, 1, 1)
+
+        grid_lines.addWidget(QLabel("Line Thickness:"), 2, 0)
+        self.spin_line_thickness = QDoubleSpinBox()
+        self.spin_line_thickness.setRange(0.5, 4.0)
+        self.spin_line_thickness.setSingleStep(0.5)
+        self.spin_line_thickness.setSuffix(" pt")
+        self.spin_line_thickness.valueChanged.connect(self._on_control_changed)
+        grid_lines.addWidget(self.spin_line_thickness, 2, 1)
+
+        grid_lines.addWidget(QLabel("Line Color:"), 3, 0)
+        self.combo_line_color = QComboBox()
+        self.combo_line_color.addItems([
+            "Teal (#00677F)",
+            "Dark Slate (#1E293B)",
+            "Charcoal (#0F172A)",
+            "Gray (#94A3B8)"
+        ])
+        self.combo_line_color.currentTextChanged.connect(self._on_control_changed)
+        grid_lines.addWidget(self.combo_line_color, 3, 1)
+
+        grid_lines.addWidget(QLabel("Line Alignment:"), 4, 0)
+        self.combo_lines_align = QComboBox()
+        self.combo_lines_align.addItems([
+            "Full Width",
+            "Match Content",
+            "Compact Inset"
+        ])
+        self.combo_lines_align.currentTextChanged.connect(self._on_control_changed)
+        grid_lines.addWidget(self.combo_lines_align, 4, 1)
+
+        layout.addLayout(grid_lines)
+
+        div0 = QFrame()
+        div0.setFrameShape(QFrame.HLine)
+        div0.setStyleSheet("border: 1px solid #E2E8F0; margin: 4px 0;")
+        layout.addWidget(div0)
+
+        # ── 2. General Font & Styles ──────────────────────────────────────
+        sec1_lbl = QLabel("<b>✏️ Patient Row Typography & Styles:</b>")
         sec1_lbl.setStyleSheet("color: #1A5276; font-size: 12px;")
         layout.addWidget(sec1_lbl)
 
@@ -283,15 +343,26 @@ class SlipSettingsDialog(QDialog):
 
         layout.addLayout(grid1)
 
-        # Horizontal Allocations Section
+        # ── 3. Horizontal Allocations & Page Fit ─────────────────────────
         div = QFrame()
         div.setFrameShape(QFrame.HLine)
         div.setStyleSheet("border: 1px solid #E2E8F0; margin: 4px 0;")
         layout.addWidget(div)
 
-        sec2_lbl = QLabel("<b>Horizontal Column Allocations (X mm from Left):</b>")
+        sec2_lbl = QLabel("<b>↔ Horizontal Column Spacing & Page Fit:</b>")
         sec2_lbl.setStyleSheet("color: #1A5276; font-size: 12px;")
         layout.addWidget(sec2_lbl)
+
+        self.chk_auto_fit = QCheckBox("✨ Auto-fit Spacing to Page Width (Recommended)")
+        self.chk_auto_fit.setStyleSheet("font-weight: 600; color: #0284C7;")
+        self.chk_auto_fit.toggled.connect(self._on_auto_fit_toggled)
+        layout.addWidget(self.chk_auto_fit)
+
+        # Container for manual spinboxes
+        self.manual_alloc_container = QWidget()
+        manual_layout = QVBoxLayout(self.manual_alloc_container)
+        manual_layout.setContentsMargins(0, 0, 0, 0)
+        manual_layout.setSpacing(4)
 
         grid2 = QGridLayout()
         grid2.setVerticalSpacing(6)
@@ -300,7 +371,7 @@ class SlipSettingsDialog(QDialog):
         # Name X
         grid2.addWidget(QLabel("Name Column:"), 0, 0)
         self.spin_name_x = QDoubleSpinBox()
-        self.spin_name_x.setRange(0.0, 140.0)
+        self.spin_name_x.setRange(0.0, 220.0)
         self.spin_name_x.setSingleStep(1.0)
         self.spin_name_x.setSuffix(" mm")
         self.spin_name_x.valueChanged.connect(self._on_control_changed)
@@ -309,7 +380,7 @@ class SlipSettingsDialog(QDialog):
         # Gender X
         grid2.addWidget(QLabel("Gender Column:"), 1, 0)
         self.spin_gender_x = QDoubleSpinBox()
-        self.spin_gender_x.setRange(0.0, 140.0)
+        self.spin_gender_x.setRange(0.0, 220.0)
         self.spin_gender_x.setSingleStep(1.0)
         self.spin_gender_x.setSuffix(" mm")
         self.spin_gender_x.valueChanged.connect(self._on_control_changed)
@@ -318,7 +389,7 @@ class SlipSettingsDialog(QDialog):
         # Age X
         grid2.addWidget(QLabel("Age Column:"), 2, 0)
         self.spin_age_x = QDoubleSpinBox()
-        self.spin_age_x.setRange(0.0, 140.0)
+        self.spin_age_x.setRange(0.0, 220.0)
         self.spin_age_x.setSingleStep(1.0)
         self.spin_age_x.setSuffix(" mm")
         self.spin_age_x.valueChanged.connect(self._on_control_changed)
@@ -327,7 +398,7 @@ class SlipSettingsDialog(QDialog):
         # Token Badge X
         grid2.addWidget(QLabel("Token Badge:"), 3, 0)
         self.spin_token_x = QDoubleSpinBox()
-        self.spin_token_x.setRange(0.0, 140.0)
+        self.spin_token_x.setRange(0.0, 220.0)
         self.spin_token_x.setSingleStep(1.0)
         self.spin_token_x.setSuffix(" mm")
         self.spin_token_x.valueChanged.connect(self._on_control_changed)
@@ -336,13 +407,14 @@ class SlipSettingsDialog(QDialog):
         # Date X
         grid2.addWidget(QLabel("Date Column:"), 4, 0)
         self.spin_date_x = QDoubleSpinBox()
-        self.spin_date_x.setRange(0.0, 140.0)
+        self.spin_date_x.setRange(0.0, 220.0)
         self.spin_date_x.setSingleStep(1.0)
         self.spin_date_x.setSuffix(" mm")
         self.spin_date_x.valueChanged.connect(self._on_control_changed)
         grid2.addWidget(self.spin_date_x, 4, 1)
 
-        layout.addLayout(grid2)
+        manual_layout.addLayout(grid2)
+        layout.addWidget(self.manual_alloc_container)
 
         # Token Badge Box Details
         div2 = QFrame()
@@ -354,8 +426,63 @@ class SlipSettingsDialog(QDialog):
         self.chk_show_badge.stateChanged.connect(self._on_control_changed)
         layout.addWidget(self.chk_show_badge)
 
+        # ── 4. Vertical Divider Line (Page Body) ──────────────────────────
+        div3 = QFrame()
+        div3.setFrameShape(QFrame.HLine)
+        div3.setStyleSheet("border: 1px solid #E2E8F0; margin: 4px 0;")
+        layout.addWidget(div3)
+
+        sec3_lbl = QLabel("<b>📐 Vertical Divider Line (Page Body):</b>")
+        sec3_lbl.setStyleSheet("color: #1A5276; font-size: 12px;")
+        layout.addWidget(sec3_lbl)
+
+        grid_v = QGridLayout()
+        grid_v.setVerticalSpacing(6)
+        grid_v.setHorizontalSpacing(12)
+
+        self.chk_show_vertical_line = QCheckBox("Show Vertical Line on Left 1/3rd of Page")
+        self.chk_show_vertical_line.setStyleSheet("font-weight: 600; color: #0F172A;")
+        self.chk_show_vertical_line.stateChanged.connect(self._on_control_changed)
+        grid_v.addWidget(self.chk_show_vertical_line, 0, 0, 1, 2)
+
+        grid_v.addWidget(QLabel("Line Alignment:"), 1, 0)
+        self.combo_vert_align = QComboBox()
+        self.combo_vert_align.addItems([
+            "Left 1/3rd (33.3%)",
+            "Left 1/4th (25.0%)",
+            "Left 30%",
+            "Left 2/5th (40.0%)",
+            "Center (50.0%)",
+            "Custom Position"
+        ])
+        self.combo_vert_align.currentTextChanged.connect(self._on_vert_align_changed)
+        grid_v.addWidget(self.combo_vert_align, 1, 1)
+
+        grid_v.addWidget(QLabel("Line Ratio (%):"), 2, 0)
+        self.spin_vert_ratio = QDoubleSpinBox()
+        self.spin_vert_ratio.setRange(15.0, 60.0)
+        self.spin_vert_ratio.setSingleStep(1.0)
+        self.spin_vert_ratio.setSuffix(" %")
+        self.spin_vert_ratio.valueChanged.connect(self._on_vert_ratio_changed)
+        grid_v.addWidget(self.spin_vert_ratio, 2, 1)
+
+        grid_v.addWidget(QLabel("Line Thickness:"), 3, 0)
+        self.spin_vert_thickness = QDoubleSpinBox()
+        self.spin_vert_thickness.setRange(0.5, 4.0)
+        self.spin_vert_thickness.setSingleStep(0.5)
+        self.spin_vert_thickness.setSuffix(" pt")
+        self.spin_vert_thickness.valueChanged.connect(self._on_control_changed)
+        grid_v.addWidget(self.spin_vert_thickness, 3, 1)
+
+        self.chk_show_rx = QCheckBox("Show 'Rx' Symbol Beside Vertical Line")
+        self.chk_show_rx.stateChanged.connect(self._on_control_changed)
+        grid_v.addWidget(self.chk_show_rx, 4, 0, 1, 2)
+
+        layout.addLayout(grid_v)
+
         layout.addStretch()
-        return tab
+        scroll.setWidget(tab)
+        return scroll
 
     def _create_reserved_and_page_tab(self) -> QWidget:
         tab = QWidget()
@@ -453,6 +580,18 @@ class SlipSettingsDialog(QDialog):
         self._set_combo(self.combo_pat_lbl_style, cfg.get("patient_label_style", "Bold"))
         self._set_combo(self.combo_pat_val_style, cfg.get("patient_value_style", "Regular"))
         self.spin_pat_y_offset.setValue(float(cfg.get("patient_y_offset_mm", 0.0)))
+
+        # Patient Divider Lines
+        self.chk_show_patient_lines.setChecked(bool(cfg.get("show_patient_lines", True)))
+        self._set_combo(self.combo_lines_style, cfg.get("patient_lines_style", "Single"))
+        self.spin_line_thickness.setValue(float(cfg.get("patient_line_thickness", 1.0)))
+        self._set_line_color_combo(cfg.get("patient_line_color", "#00677F"))
+        self._set_combo(self.combo_lines_align, cfg.get("patient_line_alignment", "Full Width"))
+
+        # Patient Auto-fit Spacing
+        is_autofit = bool(cfg.get("auto_fit_patient_row", True))
+        self.chk_auto_fit.setChecked(is_autofit)
+        self.manual_alloc_container.setEnabled(not is_autofit)
         
         self.spin_name_x.setValue(float(cfg.get("name_x_mm", 12.0)))
         self.spin_gender_x.setValue(float(cfg.get("gender_x_mm", 44.0)))
@@ -460,6 +599,13 @@ class SlipSettingsDialog(QDialog):
         self.spin_token_x.setValue(float(cfg.get("token_x_mm", 88.0)))
         self.spin_date_x.setValue(float(cfg.get("date_x_mm", 112.0)))
         self.chk_show_badge.setChecked(bool(cfg.get("show_token_badge", True)))
+
+        # Vertical Divider Line
+        self.chk_show_vertical_line.setChecked(bool(cfg.get("show_vertical_line", True)))
+        self._set_combo(self.combo_vert_align, cfg.get("vertical_line_alignment", "Left 1/3rd (33.3%)"))
+        self.spin_vert_ratio.setValue(float(cfg.get("vertical_line_ratio", 0.333)) * 100.0)
+        self.spin_vert_thickness.setValue(float(cfg.get("vertical_line_thickness", 1.0)))
+        self.chk_show_rx.setChecked(bool(cfg.get("show_rx_symbol", True)))
 
         # Reserved & Margins
         self.spin_reserved_top.setValue(float(cfg.get("reserved_top_area_mm", 0.0)))
@@ -475,10 +621,68 @@ class SlipSettingsDialog(QDialog):
         else:
             combo.setCurrentText(text)
 
+    def _on_vert_align_changed(self, text: str):
+        self.spin_vert_ratio.blockSignals(True)
+        if "1/3" in text or "33.3" in text:
+            self.spin_vert_ratio.setValue(33.3)
+        elif "1/4" in text or "25" in text:
+            self.spin_vert_ratio.setValue(25.0)
+        elif "30%" in text:
+            self.spin_vert_ratio.setValue(30.0)
+        elif "2/5" in text or "40" in text:
+            self.spin_vert_ratio.setValue(40.0)
+        elif "Center" in text or "50" in text:
+            self.spin_vert_ratio.setValue(50.0)
+        self.spin_vert_ratio.blockSignals(False)
+        self._on_control_changed()
+
+    def _on_vert_ratio_changed(self, val: float):
+        self.combo_vert_align.blockSignals(True)
+        if abs(val - 33.3) < 0.3:
+            self._set_combo(self.combo_vert_align, "Left 1/3rd (33.3%)")
+        elif abs(val - 25.0) < 0.3:
+            self._set_combo(self.combo_vert_align, "Left 1/4th (25.0%)")
+        elif abs(val - 30.0) < 0.3:
+            self._set_combo(self.combo_vert_align, "Left 30%")
+        elif abs(val - 40.0) < 0.3:
+            self._set_combo(self.combo_vert_align, "Left 2/5th (40.0%)")
+        elif abs(val - 50.0) < 0.3:
+            self._set_combo(self.combo_vert_align, "Center (50.0%)")
+        else:
+            self._set_combo(self.combo_vert_align, "Custom Position")
+        self.combo_vert_align.blockSignals(False)
+        self._on_control_changed()
+
+    def _on_auto_fit_toggled(self, checked: bool):
+        self.manual_alloc_container.setEnabled(not checked)
+        self._on_control_changed()
+
+    def _get_line_color_hex(self) -> str:
+        text = self.combo_line_color.currentText()
+        if "Dark Slate" in text:
+            return "#1E293B"
+        elif "Charcoal" in text:
+            return "#0F172A"
+        elif "Gray" in text:
+            return "#94A3B8"
+        return "#00677F"
+
+    def _set_line_color_combo(self, color_hex: str):
+        color_hex = str(color_hex).upper()
+        if "1E293B" in color_hex:
+            self.combo_line_color.setCurrentIndex(1)
+        elif "0F172A" in color_hex:
+            self.combo_line_color.setCurrentIndex(2)
+        elif "94A3B8" in color_hex:
+            self.combo_line_color.setCurrentIndex(3)
+        else:
+            self.combo_line_color.setCurrentIndex(0)
+
     def _collect_config_from_ui(self) -> dict:
         return {
             "font_family": self.combo_font.currentText(),
             "margin_left_mm": self.spin_margin_left.value(),
+            "margin_right_mm": self.spin_margin_left.value(),
             "top_margin_mm": self.spin_margin_top.value(),
             "reserved_top_area_mm": self.spin_reserved_top.value(),
             "show_reserved_area_guide": self.chk_show_guide.isChecked(),
@@ -499,6 +703,25 @@ class SlipSettingsDialog(QDialog):
             "patient_label_style": self.combo_pat_lbl_style.currentText(),
             "patient_value_style": self.combo_pat_val_style.currentText(),
             "patient_y_offset_mm": self.spin_pat_y_offset.value(),
+
+            # Patient Divider Lines
+            "show_patient_lines": self.chk_show_patient_lines.isChecked(),
+            "patient_lines_style": self.combo_lines_style.currentText(),
+            "patient_line_thickness": self.spin_line_thickness.value(),
+            "patient_line_color": self._get_line_color_hex(),
+            "patient_line_alignment": self.combo_lines_align.currentText(),
+            "patient_line_padding_top_mm": 5.5,
+            "patient_line_padding_bottom_mm": 3.5,
+
+            # Patient Auto-fit Spacing
+            "auto_fit_patient_row": self.chk_auto_fit.isChecked(),
+
+            # Vertical Divider Line (Page Body)
+            "show_vertical_line": self.chk_show_vertical_line.isChecked(),
+            "vertical_line_alignment": self.combo_vert_align.currentText(),
+            "vertical_line_ratio": self.spin_vert_ratio.value() / 100.0,
+            "vertical_line_thickness": self.spin_vert_thickness.value(),
+            "show_rx_symbol": self.chk_show_rx.isChecked(),
 
             "name_x_mm": self.spin_name_x.value(),
             "gender_x_mm": self.spin_gender_x.value(),

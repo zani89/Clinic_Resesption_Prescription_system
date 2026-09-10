@@ -59,7 +59,38 @@ DEFAULT_CONFIG = {
     "token_font_style": "Bold",
     "token_badge_padding_mm": 3.5,
     "token_badge_height_mm": 5.2,
-    "show_token_badge": True
+    "show_token_badge": True,
+
+    # Patient row auto-fit across page width
+    "auto_fit_patient_row": True,
+    "margin_right_mm": 12.0,
+
+    # Patient divider lines (top and bottom of patient details)
+    "show_patient_lines": True,
+    "patient_lines_style": "Single",       # "Single" or "Double"
+    "patient_line_thickness": 1.0,         # in pt
+    "patient_line_color": "#00677F",       # Primary Brand Teal
+    "patient_line_padding_top_mm": 5.5,
+    "patient_line_padding_bottom_mm": 3.5,
+    "patient_line_alignment": "Full Width",# "Full Width", "Match Content", "Compact Inset"
+
+    # Vertical divider line on page body (left 1/3rd of the page)
+    "show_vertical_line": True,
+    "vertical_line_alignment": "Left 1/3rd (33.3%)", # "Left 1/3rd (33.3%)", "Left 1/4th (25.0%)", "Left 30%", "Left 2/5th (40.0%)", "Center (50.0%)", "Custom"
+    "vertical_line_ratio": 0.333,          # 1/3rd (33.3%) of page width
+    "vertical_line_thickness": 1.0,        # in pt
+    "vertical_line_color": "#00677F",
+    "bottom_margin_mm": 15.0,
+    "show_rx_symbol": True,
+
+    # ── Page / Paper Settings ──────────────────────────────────────────────
+    # Options: "A5", "A4", "Letter", "Legal", "Custom"
+    "page_size": "A5",
+    # Options: "Portrait", "Landscape"
+    "page_orientation": "Portrait",
+    # Used only when page_size == "Custom"
+    "custom_page_width_mm": 148.0,
+    "custom_page_height_mm": 210.0
 }
 
 
